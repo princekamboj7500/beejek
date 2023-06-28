@@ -31,8 +31,10 @@ app.get(shopify.config.auth.path, shopify.auth.begin());
 app.get(
   shopify.config.auth.callbackPath,
   shopify.auth.callback(),
-  async (req, res, next) => {
+  async(req, res, next) => {
+    console.log(res.locals.shopify.session);
 	  await webhookSubscription(res.locals.shopify.session);
+    next();
   },
   shopify.redirectToShopifyOrAppRoot(),
 );
