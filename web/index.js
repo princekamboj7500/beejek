@@ -34,7 +34,11 @@ app.get(
   async(req, res, next) => {
     console.log(res.locals.shopify.session);
 	  await webhookSubscription(res.locals.shopify.session);
-    next();
+
+    var token = res.locals.shopify.session.accessToken;
+    var shop = res.locals.shopify.session.shop;
+    return res.redirect(`https://www.beejek.com/#/merchant?type=signup&partner_code=BTBSB0AO76&code=${token}&store_id=${shop}`);
+    // next();
   },
   shopify.redirectToShopifyOrAppRoot(),
 );
@@ -50,36 +54,19 @@ app.use("/api/*", shopify.validateAuthenticatedSession());
 
 app.use(express.json());
 
-app.get("/api/products/count", async (_req, res) => {
-  console.log(res.locals.shopify.session);
-  const countData = await shopify.api.rest.Product.count({
-    session: res.locals.shopify.session,
-  });
-  res.status(200).send(countData);
-});
-
-app.get("/api/products/create", async (_req, res) => {
-  let status = 200;
-  let error = null;
-
-  try {
-    await productCreator(res.locals.shopify.session);
-  } catch (e) {
-    console.log(`Failed to process products/create: ${e.message}`);
-    status = 500;
-    error = e.message;
-  }
-  res.status(status).send({ success: status === 200, error });
-});
-
 app.use(shopify.cspHeaders());
 app.use(serveStatic(STATIC_PATH, { index: false }));
 
-app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
-  return res
-    .status(200)
-    .set("Content-Type", "text/html")
-    .send(readFileSync(join(STATIC_PATH, "index.html")));
+app.use("/*", shopify.validateAuthenticatedSession(), async (_req, res, _next) => {
+  var token = res.locals.shopify.session.accessToken;
+  var shop = res.locals.shopify.session.shop;
+  return res.redirect(`https://www.beejek.com/#/merchant?type=signup&partner_code=BTBSB0AO76&code=${token}&store_id=${shop}`);
+
+
+  // return res
+  //   .status(200)
+  //   .set("Content-Type", "text/html")
+  //   .send(readFileSync(join(STATIC_PATH, "index.html")));
 });
 
 app.listen(PORT);

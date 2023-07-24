@@ -44,7 +44,7 @@ export function AppBridgeProvider({ children }) {
     return {
       host,
       apiKey: process.env.SHOPIFY_API_KEY,
-      forceRedirect: true,
+      forceRedirect: false
     };
   });
 
